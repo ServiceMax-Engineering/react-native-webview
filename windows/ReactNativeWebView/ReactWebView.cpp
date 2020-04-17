@@ -49,6 +49,14 @@ namespace winrt::ReactNativeWebView::implementation {
                 }
             });
 
+		m_unsupportedUriRevoker = m_webView.UnsupportedUriSchemeIdentified(
+			winrt::auto_revoke, [ref = get_weak()](auto const& sender, auto const& args) {
+			if (auto self = ref.get()) {
+				self->OnUnsupportedUriSchemeHandled(sender, args);
+			}
+		});
+
+
         m_navigationFailedRevoker = m_webView.NavigationFailed(
             winrt::auto_revoke, [ref = get_weak()](auto const& sender, auto const& args) {
                 if (auto self = ref.get()) {
@@ -76,6 +84,18 @@ namespace winrt::ReactNativeWebView::implementation {
         }
     }
 
+	void ReactWebView::WriteWebViewNavigationEventArgForUnsupportedUri(winrt::IJSValueWriter const& eventDataWriter, winrt::WebViewUnsupportedUriSchemeIdentifiedEventArgs const& args) {
+		auto tag = m_webView.GetValue(winrt::FrameworkElement::TagProperty()).as<winrt::IPropertyValue>().GetInt64();
+		WriteProperty(eventDataWriter, L"canGoBack", m_webView.CanGoBack());
+		WriteProperty(eventDataWriter, L"canGoForward", m_webView.CanGoForward());
+		WriteProperty(eventDataWriter, L"loading", !m_webView.IsLoaded());
+		WriteProperty(eventDataWriter, L"target", tag);
+		WriteProperty(eventDataWriter, L"title", m_webView.DocumentTitle());
+		if (auto uri = args.Uri()) {
+			WriteProperty(eventDataWriter, L"url", uri.AbsoluteCanonicalUri());
+		}
+	}
+
     void ReactWebView::OnNavigationStarting(winrt::WebView const& webView, winrt::WebViewNavigationStartingEventArgs const& /*args*/) {
         m_reactContext.DispatchEvent(
             webView,
@@ -101,6 +121,18 @@ namespace winrt::ReactNativeWebView::implementation {
         winrt::hstring postMessage = L"window.ReactNativeWebView = {postMessage: function (data) {window.external.notify(String(data))}};";
         m_webView.InvokeScriptAsync(L"eval", { windowAlert + postMessage });
     }
+
+	void ReactWebView::OnUnsupportedUriSchemeHandled(winrt::WebView const& webView, winrt::WebViewUnsupportedUriSchemeIdentifiedEventArgs const& args) {
+		m_reactContext.DispatchEvent(
+			webView,
+			L"topLoadingFinish",
+			[&](winrt::IJSValueWriter const& eventDataWriter) noexcept {
+				eventDataWriter.WriteObjectBegin();
+				WriteWebViewNavigationEventArgForUnsupportedUri(eventDataWriter, args);
+				eventDataWriter.WriteObjectEnd();
+			});
+		args.Handled(true);
+	}
 
     void ReactWebView::OnNavigationFailed(winrt::IInspectable const& /*sender*/, winrt::WebViewNavigationFailedEventArgs const& args) {
         m_reactContext.DispatchEvent(
