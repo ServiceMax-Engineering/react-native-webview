@@ -124,6 +124,9 @@ export default class WebView extends React.Component<WebViewSharedProps, State> 
     if(onLoadStart) {
       onLoadStart(event);
     }
+    this.setState({
+      viewState: 'LOADING',
+    });
     this.updateNavigationState(event);
   }
 
@@ -143,7 +146,6 @@ export default class WebView extends React.Component<WebViewSharedProps, State> 
     if(onLoadEnd) {
       onLoadEnd(event);
     }
-    console.error('Encountered an error loading page', event.nativeEvent);
     this.setState({
       lastErrorEvent: event.nativeEvent,
       viewState: 'ERROR',
