@@ -13,12 +13,12 @@ export declare type RNCWebViewUIManagerAndroid = RNCWebViewUIManager<WebViewComm
 export declare type RNCWebViewUIManagerIOS = RNCWebViewUIManager<WebViewCommands>;
 export declare type RNCWebViewUIManagerMacOS = RNCWebViewUIManager<WebViewCommands>;
 export declare type RNCWebViewUIManagerWindows = RNCWebViewUIManager<WebViewCommands>;
-declare type WebViewState = 'IDLE' | 'LOADING' | 'ERROR';
+declare type WebViewState = 'IDLE' | 'LOADING' | 'ERROR' | 'SHOW';
 interface BaseState {
     viewState: WebViewState;
 }
 interface NormalState extends BaseState {
-    viewState: 'IDLE' | 'LOADING';
+    viewState: 'IDLE' | 'LOADING' | 'SHOW';
     lastErrorEvent: WebViewError | null;
 }
 interface ErrorState extends BaseState {

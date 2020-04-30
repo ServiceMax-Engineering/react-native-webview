@@ -32,14 +32,14 @@ export type RNCWebViewUIManagerMacOS = RNCWebViewUIManager<WebViewCommands>
 export type RNCWebViewUIManagerWindows = RNCWebViewUIManager<WebViewCommands>
 
 
-type WebViewState = 'IDLE' | 'LOADING' | 'ERROR';
+type WebViewState = 'IDLE' | 'LOADING' | 'ERROR' | 'SHOW';
 
 interface BaseState {
   viewState: WebViewState;
 }
 
 interface NormalState extends BaseState {
-  viewState: 'IDLE' | 'LOADING';
+  viewState: 'IDLE' | 'LOADING' | 'SHOW';
   lastErrorEvent: WebViewError | null;
 }
 

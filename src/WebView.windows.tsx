@@ -163,6 +163,13 @@ export default class WebView extends React.Component<WebViewSharedProps, State> 
     this.setState({
       viewState: 'IDLE',
     });
+    setTimeout(() => {
+      if(this.state.viewState === 'IDLE') {
+          this.setState({
+              viewState: 'SHOW',
+          });  
+      }
+    }, 200);          
     this.updateNavigationState(event);
   }
 
@@ -205,7 +212,7 @@ export default class WebView extends React.Component<WebViewSharedProps, State> 
           errorEvent.code,
           errorEvent.description,
         );
-    } else if (this.state.viewState !== 'IDLE') {
+    } else if (this.state.viewState !== 'IDLE' && this.state.viewState !== 'SHOW') {
       console.error('RCTWebView invalid state encountered: ', this.state.viewState);
     }
 
@@ -216,6 +223,10 @@ export default class WebView extends React.Component<WebViewSharedProps, State> 
     ) {
       // if we're in either LOADING or ERROR states, don't show the webView
       webViewStyles.push(styles.hidden);
+    } else if(this.state.viewState === 'IDLE'){
+      webViewStyles.push({opacity:0});
+    } else {
+      webViewStyles.push({opacity:1});
     }
 
     const onShouldStartLoadWithRequest = createOnShouldStartLoadWithRequest(
