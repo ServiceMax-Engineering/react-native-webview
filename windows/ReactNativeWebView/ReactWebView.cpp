@@ -151,26 +151,21 @@ namespace winrt::ReactNativeWebView::implementation {
 
     void ReactWebView::OnScriptNotify(winrt::IInspectable const& /*sender*/, winrt::Windows::UI::Xaml::Controls::NotifyEventArgs const& args) {
         winrt::JsonObject jsonObject;
-        if (winrt::JsonObject::TryParse(args.Value(), jsonObject)) {
-            auto type = jsonObject.GetNamedString(L"type");
-            if (type == L"alert") {
-                auto dialog = winrt::MessageDialog(jsonObject.GetNamedString(L"message"));
-                dialog.Commands().Append(winrt::UICommand(L"OK"));
-                dialog.ShowAsync();
-            }
-        }
-        else {
-            m_reactContext.DispatchEvent(
-                m_webView,
-                L"topMessage",
-                [&](winrt::Microsoft::ReactNative::IJSValueWriter const& eventDataWriter) noexcept {
-                    eventDataWriter.WriteObjectBegin();
-                    {
-                        WriteProperty(eventDataWriter, L"data", winrt::to_string(args.Value()));
-                    }
-                    eventDataWriter.WriteObjectEnd();
-                });
-        }
+		PostMessage(winrt::hstring(args.Value()));
     }
+
+	void ReactWebView::PostMessage(winrt::hstring const& message) {
+		m_reactContext.DispatchEvent(
+			m_webView,
+			L"topMessage",
+			[&](winrt::Microsoft::ReactNative::IJSValueWriter const& eventDataWriter) noexcept {
+				eventDataWriter.WriteObjectBegin();
+				{
+					WriteProperty(eventDataWriter, L"data", message);
+				}
+				eventDataWriter.WriteObjectEnd();
+			});
+	}
+
 
 } // namespace winrt::ReactNativeWebView::implementation

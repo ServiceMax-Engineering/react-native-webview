@@ -108,14 +108,16 @@ namespace winrt::ReactNativeWebView::implementation {
         commands.Insert(L"goBack", static_cast<int32_t>(WebViewCommands::GoBack));
         commands.Insert(L"reload", static_cast<int32_t>(WebViewCommands::Reload));
         commands.Insert(L"stopLoading", static_cast<int32_t>(WebViewCommands::StopLoading));
-        commands.Insert(L"injectJavaScript", static_cast<int32_t>(WebViewCommands::InjectJavaScript));
-        return commands.GetView();
+		commands.Insert(L"injectJavaScript", static_cast<int32_t>(WebViewCommands::InjectJavaScript));
+		commands.Insert(L"postMessage", static_cast<int32_t>(WebViewCommands::PostMessage));
+		return commands.GetView();
     }
 
     void ReactWebViewManager::DispatchCommand(
         FrameworkElement const& view,
         int64_t commandId,
         winrt::IJSValueReader const& commandArgsReader) noexcept {
+		auto commandArgs = JSValue::ReadArrayFrom(commandArgsReader);
         if (auto webView = view.try_as<winrt::WebView>()) {
             switch (commandId) {
                 case static_cast<int64_t>(WebViewCommands::GoForward) :
@@ -135,9 +137,12 @@ namespace winrt::ReactNativeWebView::implementation {
                     webView.Stop();
                     break;
                 case static_cast<int64_t>(WebViewCommands::InjectJavaScript) :
-                    webView.InvokeScriptAsync(L"eval", { commandArgsReader.GetString() });
+                    webView.InvokeScriptAsync(L"eval", { winrt::to_hstring(commandArgs[0].AsString()) });
                     break;
-            }
+				case static_cast<int64_t>(WebViewCommands::PostMessage) :
+					m_reactWebView.PostMessage(winrt::to_hstring(commandArgs[0].AsString()));
+					break;
+			}
         }
     }
 
