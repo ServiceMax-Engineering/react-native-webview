@@ -39,6 +39,7 @@ namespace winrt::ReactNativeWebView::implementation {
     // IViewManagerWithNativeProperties
     IMapView<hstring, ViewManagerPropertyType> ReactWebViewManager::NativeProps() noexcept {
         auto nativeProps = winrt::single_threaded_map<hstring, ViewManagerPropertyType>();
+        nativeProps.Insert(L"incognito", ViewManagerPropertyType::Boolean);
         nativeProps.Insert(L"source", ViewManagerPropertyType::Map);
         return nativeProps.GetView();
     }
@@ -82,6 +83,12 @@ namespace winrt::ReactNativeWebView::implementation {
                 else if (propertyName == "backgroundColor") {
                     auto color = propertyValue.To<winrt::Color>();
                     webView.DefaultBackgroundColor(color.A==0 ? winrt::Colors::Transparent() : color);
+                }
+                else if (propertyName == "incognito") {
+                    auto incognitoValue = propertyValue.To<BOOLEAN>();
+                    if (incognitoValue == true) {
+                        webView.ClearTemporaryWebDataAsync();
+                    }
                 }
             }
         }
